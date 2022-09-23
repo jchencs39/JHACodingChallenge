@@ -1,0 +1,15 @@
+C:\JHACodingChallenge\JHACodingChallenge.Tests\bin\Debug\net6.0\JHACodingChallenge.Tests.exe
+C:\JHACodingChallenge\JHACodingChallenge.Tests\bin\Debug\net6.0\JHACodingChallenge.Tests.deps.json
+C:\JHACodingChallenge\JHACodingChallenge.Tests\bin\Debug\net6.0\JHACodingChallenge.Tests.runtimeconfig.json
+C:\JHACodingChallenge\JHACodingChallenge.Tests\bin\Debug\net6.0\JHACodingChallenge.Tests.dll
+C:\JHACodingChallenge\JHACodingChallenge.Tests\bin\Debug\net6.0\JHACodingChallenge.Tests.pdb
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\JHACodingChallenge.Tests.csproj.AssemblyReference.cache
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\JHACodingChallenge.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\JHACodingChallenge.Tests.AssemblyInfoInputs.cache
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\JHACodingChallenge.Tests.AssemblyInfo.cs
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\JHACodingChallenge.Tests.csproj.CoreCompileInputs.cache
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\JHACodingChallenge.Tests.dll
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\refint\JHACodingChallenge.Tests.dll
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\JHACodingChallenge.Tests.pdb
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\JHACodingChallenge.Tests.genruntimeconfig.cache
+C:\JHACodingChallenge\JHACodingChallenge.Tests\obj\Debug\net6.0\ref\JHACodingChallenge.Tests.dll
