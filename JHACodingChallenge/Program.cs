@@ -20,7 +20,7 @@ builder.Services.AddSingleton<TwitterConfiguration>(new TwitterConfiguration()
     ParamName = Configuration.GetValue<string>("TwitterConfiguration:ParamName"),
     ParamValue = Configuration.GetValue<string>("TwitterConfiguration:ParamValue")
 });
-builder.Services.AddTransient<IHashTagService, HashTagService>();
+builder.Services.AddTransient<ITwitterStreamService, TwitterStreamService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -36,6 +36,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseExceptionHandler("/error/500");
 
 app.UseAuthorization();
 

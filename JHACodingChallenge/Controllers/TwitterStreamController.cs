@@ -17,18 +17,16 @@ namespace JHACodingChallenge.Controllers
 {
    
     public class TwitterStreamController : Controller
-    {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly TwitterConfiguration _twitterConfiguration;
-        private readonly IHashTagService _hashTagService;
-        private HttpClient _httpClient=null;
-        public TwitterStreamController(IHttpClientFactory httpClientFactory,
-            TwitterConfiguration twitterConfiguration, 
-            IHashTagService hashTagService)
-        {
-            _httpClientFactory = httpClientFactory ?? throw new ArgumentNullException(nameof(httpClientFactory));
-            _twitterConfiguration = twitterConfiguration ?? throw new ArgumentNullException(nameof(twitterConfiguration));
-            _hashTagService= hashTagService ?? throw new ArgumentNullException(nameof(hashTagService));
+    {       
+        private readonly ITwitterStreamService _twitterStreamService;              
+        private readonly ILogger<TwitterStreamController> _logger;
+
+        public TwitterStreamController(
+            ITwitterStreamService twitterStreamService,
+            ILogger<TwitterStreamController> logger)
+        {           
+            _twitterStreamService = twitterStreamService ?? throw new ArgumentNullException(nameof(twitterStreamService));
+            _logger= logger ?? throw new ArgumentNullException(nameof(logger)); 
         }
 
         [HttpGet("api/stream/count")]
@@ -37,139 +35,54 @@ namespace JHACodingChallenge.Controllers
             int total_number = 0;
             DateTime runingdate = DateTime.Now.AddSeconds(seconds);
 
-            if (string.IsNullOrWhiteSpace(_twitterConfiguration.BearerToken))
-                throw new ArgumentNullException(nameof(_twitterConfiguration.BearerToken));
-
-            string Authorization = $"Bearer {_twitterConfiguration.BearerToken}";
-
-            if (string.IsNullOrWhiteSpace(_twitterConfiguration.BaseUrl))
-                throw new ArgumentNullException(nameof(_twitterConfiguration.BaseUrl));
-
-            Uri targetUri = new Uri(_twitterConfiguration.BaseUrl);
-
             try
             {
-                _httpClient = _httpClientFactory.CreateClient();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error happen when create httpclient object", ex);
-            }
+                _logger.LogInformation("Starting reading twitter live stram data... ");
+                _logger.LogTrace("Call TwitterStreamService.GetStreamCount()");
+                
+                total_number = await _twitterStreamService.GetStreamCount(runingdate);
+                
+                _logger.LogTrace($"Called TwitterStreamService.GetStreamCount(), received total number of tweets: {total_number.ToString()}");               
+                _logger.LogInformation("End reading twitter live stram data... ");
 
-            try
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", Authorization);
-
-                using (var request = new HttpRequestMessage(HttpMethod.Get, targetUri))
-                {
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
-                    request.Headers.Connection.Add("keep-alive");
-                    using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
-                    {
-                        var content = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                        using (var sr = new StreamReader(content, Encoding.UTF8))
-                        {
-                            while (runingdate > DateTime.Now)
-                            {
-                                var line = await sr.ReadLineAsync().ConfigureAwait(false);
-                                total_number++;
-                            }
-                        }
-                    }
-                }               
+                string received_number = $"Total number of tweet received in {seconds.ToString()} seconds : {total_number.ToString()}";
+                
+                return Ok(received_number);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                throw new Exception("Error happen when call Twitter API", ex);
-            }
-            string received_number = $"Total number of tweet received in {seconds.ToString()} seconds : {total_number.ToString()}";
-            return Ok(received_number);
+                _logger.LogError("Unexpected error occurs in TwitterStreamService.GetStreamCount()");
+                return BadRequest($"unexpected error occurs {ex.Message}");
+            }                      
         }
-
- 
 
 
         [HttpGet("api/stream/hashtags")]
-        public async Task<IActionResult> Top10Hashtags(int stream_count = 500)
-        {            
-            
-            TweetStream tweet = new TweetStream();
-            //List<TweetData> tweetDatas = new List<TweetData>();
-            List<Hashtags> hashtaglist = new List<Hashtags>();
+        public async Task<IActionResult> CalculateTop10Hashtags(int stream_count = 500)
+        {
             List<string> topHashtag = new List<string>();
-
-            if (string.IsNullOrWhiteSpace(_twitterConfiguration.BearerToken))
-                throw new ArgumentNullException(nameof(_twitterConfiguration.BearerToken));
-
-            string Authorization = $"Bearer {_twitterConfiguration.BearerToken}";
-
-            if (string.IsNullOrWhiteSpace(_twitterConfiguration.BaseUrl))
-                throw new ArgumentNullException(nameof(_twitterConfiguration.BaseUrl));
-
-            Uri targetUri = new Uri(_twitterConfiguration.BaseUrl);
-
-            if (string.IsNullOrWhiteSpace(_twitterConfiguration.ParamName))
-                throw new ArgumentNullException(nameof(_twitterConfiguration.ParamName));
-            
-            if (string.IsNullOrWhiteSpace(_twitterConfiguration.ParamValue))
-                throw new ArgumentNullException(nameof(_twitterConfiguration.ParamValue));
-            
-            targetUri = targetUri.AddOrUpdateParameter(_twitterConfiguration.ParamName, _twitterConfiguration.ParamValue);
-
             try
             {
-                _httpClient = _httpClientFactory.CreateClient();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error happen when create httpclient object", ex);
-            }
+                _logger.LogInformation("Starting reading twitter live stram data... ");
+                _logger.LogTrace("Call TwitterStreamService.CalculateTop10Hashtags()");
+                
+                topHashtag = await _twitterStreamService.CalculateTop10Hashtags(stream_count);
 
-            try
-            {
-                _httpClient.DefaultRequestHeaders.Add("Authorization", Authorization);
-
-                using (var request = new HttpRequestMessage(HttpMethod.Get, targetUri))
+                _logger.LogTrace($"Called TwitterStreamService.CalculateTop10Hashtags(), top 10 hashtags list below: ");
+                foreach(var tag in topHashtag)
                 {
-                    request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
-                    request.Headers.Connection.Add("keep-alive");
-                    using (var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
-                    {
-                        var content = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
-                        using (var sr = new StreamReader(content, Encoding.UTF8))
-                        {
-                            while (stream_count > 0)
-                            {
-                                string line = await sr.ReadLineAsync().ConfigureAwait(false);
-
-                                TweetData? tweetData = JsonConvert.DeserializeObject<TweetStream>(line).data;
-                                if (tweetData != null && tweetData.entities != null && tweetData.entities.hashtags != null)
-                                {
-                                    List<Hashtags> hashtags = tweetData.entities.hashtags;
-                                    hashtaglist.AddRange(hashtags);
-
-                                }
-                                stream_count--;
-                            }
-                        }
-                    }
+                    _logger.LogTrace($"{tag}");
                 }
+
+                _logger.LogInformation("End reading twitter live stram data... ");
+
+                return Ok(topHashtag);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error happen when call Twitter API", ex);
-            }
-
-            try
-            {
-                topHashtag = _hashTagService.GetTop10Hashtags(hashtaglist);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Error happen in HashTagService", ex);
-            }
-
-           return Ok(topHashtag); 
+                _logger.LogError("Unexpected error occurs in TwitterStreamService.CalculateTop10Hashtags()");
+                return BadRequest($"unexpected error occurs {ex.Message}");
+            }           
         }
     }
 }
